@@ -82,6 +82,13 @@
 		</dependency>
 		<!-- redis cache related.....end -->
 
+		<!--spring data mongo -->
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-mongodb</artifactId>
+			<version>1.4.0.RELEASE</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
