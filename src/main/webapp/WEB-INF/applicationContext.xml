@@ -86,5 +86,26 @@
 		executor="executor" mode="proxy" />
 	<task:scheduler id="scheduler" pool-size="10" />
 	<task:executor id="executor" pool-size="10" />
+	
+	<!-- redis发送/订阅消息 -->
+    <bean id="redisMessageListener" class="org.william.service.RedisMessageListener" />
+
+    <bean id="topicContainer" class="org.springframework.data.redis.listener.RedisMessageListenerContainer" destroy-method="destroy">
+        <property name="connectionFactory" ref="jedisConnFactory"/>
+        <property name="taskExecutor">
+            <bean class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler">
+                <property name="poolSize" value="3"></property>
+            </bean>
+        </property>
+        <property name="messageListeners">
+            <map>
+                <entry key-ref="redisMessageListener">
+                    <bean class="org.springframework.data.redis.listener.ChannelTopic">
+                        <constructor-arg value="sendStudentMsg"/>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+    </bean>
 
 </beans>
