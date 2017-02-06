@@ -6,4 +6,6 @@ public interface IStudentService {
 	
 	public void addStudent(Student student);
 
+	public void testTransaction(Student student);
+
 }

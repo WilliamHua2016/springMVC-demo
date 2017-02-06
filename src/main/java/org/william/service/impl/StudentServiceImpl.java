@@ -2,6 +2,7 @@ package org.william.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.william.dao.BaseDao;
 import org.william.dao.IStudentMapper;
 import org.william.model.Student;
@@ -34,6 +35,17 @@ public class StudentServiceImpl implements IStudentService{
 		}
 		
 		System.out.println("-----插入mongo DB END------");
+	}
+
+	
+	@Transactional
+	@Override
+	public void testTransaction(Student student) {
+		baseDao.insert("org.william.dao.IStudentMapper.addStudent", student);
+		System.out.println("-----第一次插入student 成功------");
+		int i=1/0;
+		baseDao.insert("org.william.dao.IStudentMapper.addStudent", student);
+		System.out.println("-----第二次插入student 成功------");
 	}
 
 }

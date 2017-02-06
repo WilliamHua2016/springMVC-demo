@@ -119,5 +119,12 @@
 	    <!-- 线程池所使用的缓冲队列 -->  
 	<property name ="queueCapacity" value ="200" />  
 	</bean>
+	
+	<!-- spring事务管理(全注解方式) -->
+    <tx:annotation-driven transaction-manager="demoTransactionManager"/>
+	
+	 <bean id="demoTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+     </bean>
 
 </beans>
