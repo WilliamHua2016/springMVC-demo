@@ -3,14 +3,27 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-       http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+       http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.2.xsd">
 
     <mvc:annotation-driven/>
     
     <!-- 仅扫描controller包 -->
     <context:component-scan base-package="org.william.controller"/>
+    
+    <bean id="timeHandler" class="org.william.aspectdemo.TimeHandler" />
+
+	<aop:config>
+		<aop:aspect id="time" ref="timeHandler">
+			<aop:pointcut id="addAllMethod"
+				expression="execution(public * org.william.controller..*.*(..))" />
+			<aop:before method="printTime" pointcut-ref="addAllMethod" />
+			<aop:after method="printTime" pointcut-ref="addAllMethod" />
+		</aop:aspect>
+	</aop:config>
     
 </beans>  
