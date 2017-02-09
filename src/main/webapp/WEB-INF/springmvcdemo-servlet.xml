@@ -25,5 +25,8 @@
 			<aop:after method="printTime" pointcut-ref="addAllMethod" />
 		</aop:aspect>
 	</aop:config>
+	
+	<!-- 激活自动代理功能 aop 注解方式 -->
+	<aop:aspectj-autoproxy proxy-target-class="true"/>
     
 </beans>  
