@@ -2,12 +2,13 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:mongo="http://www.springframework.org/schema/data/mongo"
-	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:task="http://www.springframework.org/schema/task" xmlns:aop="http://www.springframework.org/schema/aop"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
      http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
      http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+     http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
      ">
 
 	<context:annotation-config />
@@ -86,45 +87,65 @@
 		executor="executor" mode="proxy" />
 	<task:scheduler id="scheduler" pool-size="10" />
 	<task:executor id="executor" pool-size="10" />
-	
-	<!-- redis发送/订阅消息 -->
-    <bean id="redisMessageListener" class="org.william.service.RedisMessageListener" />
 
-    <bean id="topicContainer" class="org.springframework.data.redis.listener.RedisMessageListenerContainer" destroy-method="destroy">
-        <property name="connectionFactory" ref="jedisConnFactory"/>
-        <property name="taskExecutor">
-            <bean class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler">
-                <property name="poolSize" value="3"></property>
-            </bean>
-        </property>
-        <property name="messageListeners">
-            <map>
-                <entry key-ref="redisMessageListener">
-                    <bean class="org.springframework.data.redis.listener.ChannelTopic">
-                        <constructor-arg value="sendStudentMsg"/>
-                    </bean>
-                </entry>
-            </map>
-        </property>
-    </bean>
-    
-    <!-- 异步线程池 -->  
-	<bean id ="taskExecutor"  class ="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor" >  
-	    <!-- 线程池维护线程的最少数量 -->  
-	<property name ="corePoolSize" value ="5" />  
-	    <!-- 线程池维护线程所允许的空闲时间 -->  
-	<property name ="keepAliveSeconds" value ="30000" />  
-	    <!-- 线程池维护线程的最大数量 -->  
-	<property name ="maxPoolSize" value ="1000" />  
-	    <!-- 线程池所使用的缓冲队列 -->  
-	<property name ="queueCapacity" value ="200" />  
+	<!-- redis发送/订阅消息 -->
+	<bean id="redisMessageListener" class="org.william.service.RedisMessageListener" />
+
+	<bean id="topicContainer"
+		class="org.springframework.data.redis.listener.RedisMessageListenerContainer"
+		destroy-method="destroy">
+		<property name="connectionFactory" ref="jedisConnFactory" />
+		<property name="taskExecutor">
+			<bean
+				class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler">
+				<property name="poolSize" value="3"></property>
+			</bean>
+		</property>
+		<property name="messageListeners">
+			<map>
+				<entry key-ref="redisMessageListener">
+					<bean class="org.springframework.data.redis.listener.ChannelTopic">
+						<constructor-arg value="sendStudentMsg" />
+					</bean>
+				</entry>
+			</map>
+		</property>
 	</bean>
-	
+
+	<!-- 异步线程池 -->
+	<bean id="taskExecutor"
+		class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<!-- 线程池维护线程的最少数量 -->
+		<property name="corePoolSize" value="5" />
+		<!-- 线程池维护线程所允许的空闲时间 -->
+		<property name="keepAliveSeconds" value="30000" />
+		<!-- 线程池维护线程的最大数量 -->
+		<property name="maxPoolSize" value="1000" />
+		<!-- 线程池所使用的缓冲队列 -->
+		<property name="queueCapacity" value="200" />
+	</bean>
+
 	<!-- spring事务管理(全注解方式) -->
-    <tx:annotation-driven transaction-manager="demoTransactionManager"/>
-	
-	 <bean id="demoTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <property name="dataSource" ref="dataSource"/>
-     </bean>
+	<!-- <tx:annotation-driven transaction-manager="demoTransactionManager"/> -->
+
+	<!-- 定义事务管理器（声明式的事务） -->
+	<bean id="demoTransactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- spring事务管理(使用tx标签配置的拦截器) -->
+	<tx:advice id="advice" transaction-manager="demoTransactionManager">
+		<tx:attributes>
+			<tx:method name="testTransaction*" propagation="REQUIRED"
+				read-only="false" rollback-for="java.lang.Exception" />
+		</tx:attributes>
+	</tx:advice>
+
+	<aop:config>
+		<aop:pointcut id="testService"
+			expression="execution (* org.william.service..*(..))" />
+		<aop:advisor advice-ref="advice" pointcut-ref="testService" />
+	</aop:config>
 
 </beans>
